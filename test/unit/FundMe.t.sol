@@ -19,12 +19,12 @@ contract FundMeTest is Test {
         vm.deal(USER, USER_STARTING_BALANCE);
     }
 
-    modifier prankFunded(){
+    modifier prankFunded() {
         vm.prank(USER);
-        fundMe.fundWithEth{value:SEND_1_ETH}();
+        fundMe.fundWithEth{value: SEND_1_ETH}();
         _;
     }
- 
+
     // Watch video on visibility
     function test_MinDollarIsFive() external view {
         assertEq(fundMe.MIN_USD(), 5e18);
@@ -42,18 +42,17 @@ contract FundMeTest is Test {
 
     function test_FundFailsFromNotEnough() public {
         vm.expectRevert(); // Command to say next line exe should revert
-        fundMe.fundWithEth{value:1e15}(); // Send small amount
+        fundMe.fundWithEth{value: 1e15}(); // Send small amount
         vm.expectRevert();
-        fundMe.fundWithEth{value:0}(); // Sending 0 eth 
+        fundMe.fundWithEth{value: 0}(); // Sending 0 eth
     }
 
-    function test_UpdateDataStructures() public prankFunded{
+    function test_UpdateDataStructures() public prankFunded {
         uint256 amountFunded = fundMe.getAmountFundedForaddress(USER);
         assertEq(amountFunded, SEND_1_ETH);
-
     }
 
-    function test_FunderGetsAddedToArray() public prankFunded{
+    function test_FunderGetsAddedToArray() public prankFunded {
         assertEq(fundMe.getFunder(0), USER);
     }
 
@@ -63,11 +62,11 @@ contract FundMeTest is Test {
         fundMe.withdraw();
     }
 
-    function test_OwnerCanWithdrawWithOtherFunders() public prankFunded{
+    function test_OwnerCanWithdrawWithOtherFunders() public prankFunded {
         // Arrange \\
         address owner = fundMe.getOwner();
         uint256 startingOwnerBalance = owner.balance;
-        
+
         // Act \\
         vm.prank(owner);
         fundMe.withdraw();
@@ -76,16 +75,15 @@ contract FundMeTest is Test {
         assertGt(owner.balance, startingOwnerBalance);
         // Ensure entire balance is withdrawn
         assertEq(address(fundMe).balance, 0);
-
     }
 
-    function test_WithdrawWithMultipleFunders() public prankFunded{
+    function test_WithdrawWithMultipleFunders() public prankFunded {
         // Arange \\
         // get multiple funders to fund fundMe
         uint160 numberofFunders = 10;
-        for(uint160 i = 1; i < numberofFunders; i++){
+        for (uint160 i = 1; i < numberofFunders; i++) {
             hoax(address(i), SEND_1_ETH);
-            fundMe.fundWithEth{value:SEND_1_ETH}();
+            fundMe.fundWithEth{value: SEND_1_ETH}();
         }
 
         address owner = fundMe.getOwner();
@@ -99,16 +97,15 @@ contract FundMeTest is Test {
         assertGt(owner.balance, startingOwnerBalance);
         // Ensure entire balance is withdrawn
         assertEq(address(fundMe).balance, 0);
-
     }
 
-    function test_WithdrawWithMultipleFundersCheaper() public prankFunded{
+    function test_WithdrawWithMultipleFundersCheaper() public prankFunded {
         // Arange \\
         // get multiple funders to fund fundMe
         uint160 numberofFunders = 10;
-        for(uint160 i = 1; i < numberofFunders; i++){
+        for (uint160 i = 1; i < numberofFunders; i++) {
             hoax(address(i), SEND_1_ETH);
-            fundMe.fundWithEth{value:SEND_1_ETH}();
+            fundMe.fundWithEth{value: SEND_1_ETH}();
         }
 
         address owner = fundMe.getOwner();
@@ -117,11 +114,10 @@ contract FundMeTest is Test {
         // Act \\
         vm.prank(owner);
         fundMe.cheaperWithdraw();
-        
+
         // Assert \\
         assertGt(owner.balance, startingOwnerBalance);
         // Ensure entire balance is withdrawn
         assertEq(address(fundMe).balance, 0);
-
     }
 }

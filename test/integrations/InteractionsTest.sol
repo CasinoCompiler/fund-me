@@ -32,5 +32,4 @@ contract InteractionsTest is Test {
         withdrawFundMe = new WithdrawFundMe();
         withdrawFundMe.withdrawFundMe(address(fundMe));
     }
-
 }

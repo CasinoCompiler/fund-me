@@ -12,9 +12,9 @@ contract FundMe {
     address private immutable i_owner;
 
     AggregatorV3Interface private s_priceFeed;
-   
-   // Constructor argument is chainlink price feed proxy address for chosen token \\
-           // https://docs.chain.link/data-feeds/price-feeds/addresses \\
+
+    // Constructor argument is chainlink price feed proxy address for chosen token \\
+    // https://docs.chain.link/data-feeds/price-feeds/addresses \\
     constructor(address priceFeedContract) {
         i_owner = msg.sender;
         s_priceFeed = AggregatorV3Interface(priceFeedContract);
@@ -23,12 +23,12 @@ contract FundMe {
     // Modifier to ensure the owner is the msg sender
     modifier onlyOwner() {
         // require(msg.sender == i_owner);
-        if (msg.sender != i_owner){
+        if (msg.sender != i_owner) {
             revert FundMe__notOwner();
         }
         _;
     }
-    
+
     // Minimum contribution in usd
     uint256 public constant MIN_USD = 5 * 1e18;
 
@@ -36,10 +36,10 @@ contract FundMe {
     address[] private s_funders;
 
     // Mapping of funders
-    mapping(address  => uint256) private s_addressToAmountFunded;
+    mapping(address => uint256) private s_addressToAmountFunded;
 
     function fundWithEth() public payable {
-        // Ensure eth amount sent is > minimum contribution 
+        // Ensure eth amount sent is > minimum contribution
         require(msg.value.convertPrice(s_priceFeed) > MIN_USD);
 
         // Update funders array
@@ -47,10 +47,9 @@ contract FundMe {
 
         // Update mapping with previous contribution + new contribution
         s_addressToAmountFunded[msg.sender] += msg.value;
-
     }
 
-        // Withdraw all funds to address \\
+    // Withdraw all funds to address \\
     function withdraw() public onlyOwner {
         // TRANSFER METHOD:: payable(msg.sender).transfer(address(this).balance);
         // SEND METHOD:: bool sendSuccess = payable(msg.sender).send(address(this).balance) /n require(sendSuccess, "Send Failed")
@@ -60,7 +59,7 @@ contract FundMe {
         require(sent, "Withdraw failed");
 
         // Clear the mapping. this is best practice
-        for(uint256 i = 0; i < s_funders.length; i++){
+        for (uint256 i = 0; i < s_funders.length; i++) {
             s_addressToAmountFunded[s_funders[0]] = 0;
         }
 
@@ -77,7 +76,7 @@ contract FundMe {
         require(sent, "Withdraw failed");
 
         // Clear the mapping. this is best practice
-        for(uint256 i = 0; i < fundersLength; i++){
+        for (uint256 i = 0; i < fundersLength; i++) {
             s_addressToAmountFunded[s_funders[0]] = 0;
         }
 
@@ -88,30 +87,29 @@ contract FundMe {
     // Getters\\
 
     // Version representing type of Chainlink aggregator
-    function getVersion() public view returns(uint256){
+    function getVersion() public view returns (uint256) {
         return s_priceFeed.version();
     }
 
-    function getOwner() public view returns(address){
+    function getOwner() public view returns (address) {
         return i_owner;
     }
 
     // Function to get s_funders array
-    function getFunder(uint256 index) public view returns(address){
+    function getFunder(uint256 index) public view returns (address) {
         return s_funders[index];
     }
 
     // Function to get amount funded from address
-    function getAmountFundedForaddress(address _funderAddress) public view returns(uint256){
+    function getAmountFundedForaddress(address _funderAddress) public view returns (uint256) {
         return s_addressToAmountFunded[_funderAddress];
     }
 
-    receive() external payable { 
+    receive() external payable {
         fundWithEth();
     }
 
-    fallback() external payable { 
+    fallback() external payable {
         fundWithEth();
     }
-
 }
